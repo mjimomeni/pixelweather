@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PixelWeather</title>
+<meta name="description" content="هواشناسی پیکسلی با داده‌های Open-Meteo، انیمیشن، صدای محیطی و مینی‌گیم">
+<meta name="theme-color" content="#10102a">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="canonical" href="https://pixelweatherx.netlify.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PixelWeather">
+<meta property="og:title" content="PixelWeather · هواشناسی پیکسلی">
+<meta property="og:description" content="هواشناسی دقیق با داده‌های Open-Meteo، انیمیشن آسمان پیکسلی، صدای محیطی و مینی‌گیم">
+<meta property="og:url" content="https://pixelweatherx.netlify.app/">
+<meta property="og:image" content="https://pixelweatherx.netlify.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="fa_IR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PixelWeather · هواشناسی پیکسلی">
+<meta name="twitter:description" content="هواشناسی دقیق با داده‌های Open-Meteo، انیمیشن آسمان پیکسلی، صدای محیطی و مینی‌گیم">
+<meta name="twitter:image" content="https://pixelweatherx.netlify.app/og-image.png">
+<style>
+@font-face{font-family:'Press Start 2P';src:url(fonts/press-start-2p-latin-400-normal.woff2) format('woff2');font-display:swap}
+@font-face{font-family:Vazirmatn;font-weight:400;src:url(fonts/vazirmatn-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
+@font-face{font-family:Vazirmatn;font-weight:400;src:url(fonts/vazirmatn-arabic-400-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE80-FEFC;font-display:swap}
+@font-face{font-family:Vazirmatn;font-weight:700;src:url(fonts/vazirmatn-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
+@font-face{font-family:Vazirmatn;font-weight:700;src:url(fonts/vazirmatn-arabic-700-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE80-FEFC;font-display:swap}
+:root{--y:#ffd23f;--bg:rgba(16,16,40,.82);--ln:#0b0b1c}
+*{box-sizing:border-box;margin:0}
+body{font-family:Vazirmatn,Tahoma,sans-serif;color:#fff;min-height:100vh;background:#10102a;overflow-x:hidden}
+#sky{position:fixed;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:-1}
+.pf{font-family:'Press Start 2P',monospace}
+.px{background:var(--bg);border:4px solid var(--ln);box-shadow:inset 0 0 0 3px rgba(255,255,255,.1),6px 6px 0 rgba(0,0,0,.35)}
+main{max-width:1000px;margin:auto;padding:14px;display:grid;gap:14px}
+.up{animation:up .6s steps(6) both}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+header{display:flex;gap:8px;flex-wrap:wrap;align-items:center;position:relative;padding:10px}
+.logo{font-size:12px;color:var(--y);text-shadow:3px 3px 0 #000;margin-inline-end:auto}
+#q{flex:1;min-width:150px;background:#0b0b1c;color:#fff;border:4px solid #3a3a6a;padding:9px;font:inherit;outline:none}
+#q:focus{border-color:var(--y)}
+.btn{font-family:'Press Start 2P',monospace;font-size:11px;background:var(--y);color:#111;border:4px solid var(--ln);padding:10px 12px;cursor:pointer;box-shadow:0 4px 0 #a07d00}
+.btn:active{transform:translateY(4px);box-shadow:none}
+#res{position:absolute;top:100%;inset-inline:10px;z-index:9;background:#0b0b1c;border:4px solid var(--y)}
+#res:empty{display:none}
+.ri{padding:10px;cursor:pointer;border-bottom:2px solid #222244}.ri:hover{background:#26265a}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#26265a;border:3px solid var(--ln);padding:4px 10px;cursor:pointer;font-size:13px}
+.chip:hover{background:#3a3a8a}.chip b{color:#ff6b6b;margin-inline-start:6px}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:10px;padding:20px;align-items:center}
+.city{font-size:22px;font-weight:700}.date{opacity:.8;font-size:13px;margin:4px 0 10px}
+.temp{font-size:clamp(40px,10vw,72px);color:var(--y);text-shadow:5px 5px 0 #000;direction:ltr;text-align:right}
+.desc{font-size:20px;margin-top:10px}.feels{opacity:.85;font-size:14px;margin-top:4px}
+.big{font-size:clamp(80px,18vw,140px);text-align:center;animation:bob 2s steps(4) infinite;filter:drop-shadow(6px 6px 0 rgba(0,0,0,.4))}
+@keyframes bob{50%{transform:translateY(-12px)}}
+.tip{padding:12px 16px;font-size:15px;border-color:var(--y)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.st{padding:14px;text-align:center;transition:transform .15s steps(2)}.st:hover{transform:translateY(-6px)}
+.st small{display:block;opacity:.8;font-size:13px;margin-bottom:8px}
+.st .v{font-family:'Press Start 2P',monospace;font-size:15px;direction:ltr;color:var(--y)}
+.st .s{display:block;margin-top:8px;font-size:12px;opacity:.9}
+.arrow{display:inline-block;transition:transform 1s steps(8)}
+h2{font-size:16px;padding:12px 16px 0;color:var(--y)}
+.hours{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 16px}
+.h{min-width:74px;text-align:center;background:#1d1d4a;border:3px solid var(--ln);padding:8px 4px;font-size:12px}
+.h .i{font-size:26px;margin:4px 0}.h .t{font-family:'Press Start 2P';font-size:10px;direction:ltr}
+.bar{height:70px;display:flex;align-items:flex-end;justify-content:center;margin:6px 0}
+.bar i{width:18px;background:linear-gradient(#ff7a3d,#ffd23f);border:2px solid #000;animation:grow .8s steps(8) both}
+@keyframes grow{from{height:0!important}}
+.rain{color:#7fd4ff;font-size:11px}
+.day{display:grid;grid-template-columns:90px 36px 52px 1fr 52px 48px;align-items:center;gap:8px;padding:8px 16px;border-top:2px solid #222255;font-size:14px}
+.day .t{font-family:'Press Start 2P';font-size:10px;direction:ltr}
+.rg{height:12px;background:#0b0b1c;border:2px solid #000;position:relative}
+.rg i{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#4ac8ff,#ffd23f,#ff6b3d)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sun{display:flex;justify-content:space-around;padding:14px;text-align:center;font-size:14px;flex-wrap:wrap;gap:10px}
+.sun .pf{display:block;margin-top:6px;font-size:12px;color:var(--y)}
+.sun div span{font-size:34px;display:block}
+#load{position:fixed;inset:0;background:#10102a;display:grid;place-items:center;z-index:99;font-size:16px;color:var(--y);transition:opacity .4s}
+#load.off{opacity:0;pointer-events:none}#load span{animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:0}}
+#toast{position:fixed;bottom:16px;inset-inline:16px;margin:auto;max-width:420px;background:#c0392b;border:4px solid #000;padding:12px;text-align:center;display:none;z-index:50}
+footer{text-align:center;font-size:12px;opacity:.7;padding-bottom:20px}footer a{color:var(--y)}
+@media(max-width:700px){.hero,.two{grid-template-columns:1fr}.day{grid-template-columns:70px 30px 44px 1fr 44px 40px;padding:8px}}
+
+/* v2 layout */
+body{font-size:14px}
+main{max-width:1240px;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;padding:10px 14px}
+main>header,main>.chips,main>footer{grid-column:1/-1}
+.chips:empty{display:none}
+.L,.Rr{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-content:start;min-width:0}
+.L>*,.Rr>*{min-width:0;max-width:100%}
+.hours{max-width:100%}
+.px{border-width:3px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),4px 4px 0 rgba(0,0,0,.4)}
+header{padding:8px 10px;gap:6px}
+.btn{padding:7px 9px;font-size:10px;border-width:3px;box-shadow:0 3px 0 #a07d00}
+.btn.off{opacity:.45}
+h2{display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:6px 10px;margin:0;color:#fff;background:repeating-linear-gradient(90deg,#3b3bb5 0 4px,#4545c8 4px 8px);border-bottom:3px solid var(--ln);text-shadow:2px 2px 0 #000}
+h2::after{content:"▪ ▫ ✕";font-family:'Press Start 2P',monospace;font-size:8px;letter-spacing:2px;color:var(--y);direction:ltr}
+h2.nx::after{display:none}
+.hero{padding:12px 16px;grid-template-columns:1.3fr 1fr;background:linear-gradient(135deg,rgba(45,45,120,.92),rgba(16,16,40,.85))}
+.city{font-size:19px}.date{margin:2px 0 6px;font-size:12px}
+.temp{font-size:clamp(34px,5vw,54px);text-shadow:4px 4px 0 #000}
+.desc{font-size:17px;margin-top:6px}.feels{font-size:12px}
+.big{font-size:clamp(60px,8vw,92px)}
+.tip{padding:7px 12px;font-size:13px}
+.grid{grid-template-columns:repeat(4,1fr);gap:8px}
+.st{padding:8px 4px}.st small{font-size:12px;margin-bottom:4px}.st .v{font-size:12px}.st .s{font-size:11px;margin-top:5px}
+.hours{padding:8px 10px 10px;gap:6px}.h{min-width:60px;padding:5px 2px;font-size:11px}.h .i{font-size:21px;margin:2px 0}.bar{height:44px;margin:3px 0}.bar i{width:14px}
+.day{padding:4px 12px;font-size:13px;grid-template-columns:68px 26px 42px 1fr 42px 42px;gap:6px}
+.sun{padding:10px;gap:6px;font-size:12px}.sun div span{font-size:26px}
+.two{grid-template-columns:1fr;gap:12px}
+body.crt::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);box-shadow:inset 0 0 120px rgba(0,0,0,.5)}
+#gw{position:fixed;inset:0;background:rgba(5,5,20,.78);display:none;place-items:center;z-index:80}
+#gw.on{display:grid}
+#gwin{width:min(94vw,720px);background:#0b0b1c}
+#gc{display:block;width:100%;image-rendering:pixelated;touch-action:none;cursor:none}
+.gbar{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:6px 10px;font-size:12px;background:#14143a}
+@media(max-width:900px){main{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}}
+
+/* v3: search fix, clock, window manager */
+header{z-index:40}
+#res{max-height:60vh;overflow:auto;box-shadow:6px 6px 0 rgba(0,0,0,.5)}
+h2::after{display:none!important}
+.wc{display:flex;gap:4px;direction:ltr}
+.wc b{font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;color:var(--y);background:#0b0b1c;border:2px solid #000;padding:3px 5px;line-height:1}
+.wc b:hover{background:var(--y);color:#000}
+.woff{display:none!important}
+.wmin>:not(h2){display:none!important}
+.wempty{display:none!important}
+main.one{grid-template-columns:minmax(0,1fr)!important}
+.pop{animation:up .5s steps(5)}
+body{padding-bottom:84px}
+#dock{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:45;display:flex;gap:6px;padding:6px;max-width:96vw;overflow-x:auto;background:rgba(11,11,28,.93);border:3px solid var(--ln);box-shadow:inset 0 0 0 2px rgba(255,255,255,.1),4px 4px 0 rgba(0,0,0,.45)}
+.dk{font:17px Vazirmatn,sans-serif;background:#26265a;border:3px solid var(--ln);color:#fff;padding:3px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:50px;transition:transform .12s steps(2)}
+.dk small{font-size:9px;opacity:.9;white-space:nowrap}
+.dk.on{background:#3b3bb5;box-shadow:inset 0 -3px 0 var(--y)}
+.dk:not(.on){opacity:.5}
+.dk:hover{transform:translateY(-4px)}
+.dk.rs{background:var(--y);color:#000;opacity:1}
+.clk{padding:10px 12px 12px}
+#clkc{display:block;width:100%;image-rendering:pixelated;border:3px solid var(--ln);cursor:pointer;box-shadow:0 0 0 2px rgba(255,255,255,.08),0 0 24px rgba(255,210,63,.18)}
+.cinfo{text-align:center;font-size:13px;margin-top:8px;line-height:1.7}
+#ctz{font-size:11px;opacity:.85}
+.dbar{direction:ltr;position:relative;height:12px;margin:20px 4px 4px;background:#0b0b1c;border:2px solid #000}
+.dbar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,#ffb000 0 4px,#ff8a1c 4px 8px)}
+.dbar u{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.8}
+.dbar span{position:absolute;top:-19px;transform:translateX(-50%);font-size:14px}
+@media(max-width:560px){.dk{min-width:42px;padding:3px 5px}}
+html[dir=ltr] .temp{text-align:left}
+</style>
+</head>
+<body>
+<canvas id="sky" width="160" height="90"></canvas>
+<div id="load" class="pf"><span>LOADING...</span></div>
+<div id="toast"></div>
+<div id="gw"><div id="gwin" class="px"><h2 class="nx"><span id="gt">🎮 WEATHER CATCH</span><button class="btn" id="gxb" style="padding:3px 8px">✕</button></h2><canvas id="gc" width="192" height="108"></canvas><div class="gbar"><span>← → / A D یا موس و لمس: حرکت</span><span>Space: شروع و مکث · Esc: خروج</span></div><div class="gbar" style="justify-content:center">⭐ ستاره = کندی زمان + جان · ⚡ و 💣 = خطر · کمبو بگیر تا ضریب امتیاز بالا بره</div></div></div>
+<main>
+<header class="px up">
+ <div class="logo pf"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiIgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiBzaGFwZS1yZW5kZXJpbmc9ImNyaXNwRWRnZXMiPjxyZWN0IHg9IjEiIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIyIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMyIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjQiIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSI1IiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iNiIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjciIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSI4IiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iOSIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjEwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMTEiIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIxMiIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjEzIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMTQiIHk9IjAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIwIiB5PSIxIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjIiIHk9IjEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSIzIiB5PSIxIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iNCIgeT0iMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjUiIHk9IjEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmQyM2YiLz48cmVjdCB4PSI2IiB5PSIxIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iNyIgeT0iMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjgiIHk9IjEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSI5IiB5PSIxIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTAiIHk9IjEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMSIgeT0iMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjEyIiB5PSIxIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTMiIHk9IjEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxNCIgeT0iMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjE1IiB5PSIxIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMCIgeT0iMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjEiIHk9IjIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSIyIiB5PSIyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZkMjNmIi8+PHJlY3QgeD0iMyIgeT0iMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjQiIHk9IjIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZjlmMWMiLz48cmVjdCB4PSI1IiB5PSIyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmY5ZjFjIi8+PHJlY3QgeD0iNiIgeT0iMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmOWYxYyIvPjxyZWN0IHg9IjciIHk9IjIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSI4IiB5PSIyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZkMjNmIi8+PHJlY3QgeD0iOSIgeT0iMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjEwIiB5PSIyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTEiIHk9IjIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMiIgeT0iMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjEzIiB5PSIyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTQiIHk9IjIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxNSIgeT0iMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjAiIHk9IjMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIxIiB5PSIzIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMiIgeT0iMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjMiIHk9IjMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZjlmMWMiLz48cmVjdCB4PSI0IiB5PSIzIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZkMjNmIi8+PHJlY3QgeD0iNSIgeT0iMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZDIzZiIvPjxyZWN0IHg9IjYiIHk9IjMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmQyM2YiLz48cmVjdCB4PSI3IiB5PSIzIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmY5ZjFjIi8+PHJlY3QgeD0iOCIgeT0iMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjkiIHk9IjMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMCIgeT0iMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjExIiB5PSIzIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTIiIHk9IjMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMyIgeT0iMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjE0IiB5PSIzIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTUiIHk9IjMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIwIiB5PSI0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMSIgeT0iNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjIiIHk9IjQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZjlmMWMiLz48cmVjdCB4PSIzIiB5PSI0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZkMjNmIi8+PHJlY3QgeD0iNCIgeT0iNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZjZhOCIvPjxyZWN0IHg9IjUiIHk9IjQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmY2YTgiLz48cmVjdCB4PSI2IiB5PSI0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZkMjNmIi8+PHJlY3QgeD0iNyIgeT0iNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZDIzZiIvPjxyZWN0IHg9IjgiIHk9IjQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZjlmMWMiLz48cmVjdCB4PSI5IiB5PSI0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMTAiIHk9IjQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMSIgeT0iNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjEyIiB5PSI0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTMiIHk9IjQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxNCIgeT0iNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjE1IiB5PSI0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMCIgeT0iNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjEiIHk9IjUiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmQyM2YiLz48cmVjdCB4PSIyIiB5PSI1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmY5ZjFjIi8+PHJlY3QgeD0iMyIgeT0iNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZDIzZiIvPjxyZWN0IHg9IjQiIHk9IjUiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmY2YTgiLz48cmVjdCB4PSI1IiB5PSI1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZkMjNmIi8+PHJlY3QgeD0iNiIgeT0iNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZDIzZiIvPjxyZWN0IHg9IjciIHk9IjUiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmQyM2YiLz48cmVjdCB4PSI4IiB5PSI1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmY5ZjFjIi8+PHJlY3QgeD0iOSIgeT0iNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjEwIiB5PSI1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMTEiIHk9IjUiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMiIgeT0iNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjEzIiB5PSI1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTQiIHk9IjUiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxNSIgeT0iNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjAiIHk9IjYiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIxIiB5PSI2IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMiIgeT0iNiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmOWYxYyIvPjxyZWN0IHg9IjMiIHk9IjYiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmQyM2YiLz48cmVjdCB4PSI0IiB5PSI2IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZkMjNmIi8+PHJlY3QgeD0iNSIgeT0iNiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZDIzZiIvPjxyZWN0IHg9IjYiIHk9IjYiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmQyM2YiLz48cmVjdCB4PSI3IiB5PSI2IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iOCIgeT0iNiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjkiIHk9IjYiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSIxMCIgeT0iNiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjExIiB5PSI2IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMTIiIHk9IjYiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSIxMyIgeT0iNiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjE0IiB5PSI2IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTUiIHk9IjYiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIwIiB5PSI3IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMSIgeT0iNyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjIiIHk9IjciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSIzIiB5PSI3IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmY5ZjFjIi8+PHJlY3QgeD0iNCIgeT0iNyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZDIzZiIvPjxyZWN0IHg9IjUiIHk9IjciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmQyM2YiLz48cmVjdCB4PSI2IiB5PSI3IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iNyIgeT0iNyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjgiIHk9IjciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSI5IiB5PSI3IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iMTAiIHk9IjciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSIxMSIgeT0iNyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjEyIiB5PSI3IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iMTMiIHk9IjciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSIxNCIgeT0iNyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjE1IiB5PSI3IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMCIgeT0iOCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjEiIHk9IjgiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSIyIiB5PSI4IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZkMjNmIi8+PHJlY3QgeD0iMyIgeT0iOCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjQiIHk9IjgiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSI1IiB5PSI4IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iNiIgeT0iOCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjciIHk9IjgiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSI4IiB5PSI4IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iOSIgeT0iOCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjEwIiB5PSI4IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iMTEiIHk9IjgiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSIxMiIgeT0iOCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjEzIiB5PSI4IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iMTQiIHk9IjgiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSIxNSIgeT0iOCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjAiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIxIiB5PSI5IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMiIgeT0iOSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjMiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSI0IiB5PSI5IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iNSIgeT0iOSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjYiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSI3IiB5PSI5IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iOCIgeT0iOSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjkiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSIxMCIgeT0iOSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjExIiB5PSI5IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjZmZmZmZmIi8+PHJlY3QgeD0iMTIiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmZmZmYiLz48cmVjdCB4PSIxMyIgeT0iOSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2ZmZmZmZiIvPjxyZWN0IHg9IjE0IiB5PSI5IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMTUiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIwIiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjEiIHk9IjEwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMiIgeT0iMTAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIzIiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjQiIHk9IjEwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iNSIgeT0iMTAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNiOGM0ZTAiLz48cmVjdCB4PSI2IiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2I4YzRlMCIvPjxyZWN0IHg9IjciIHk9IjEwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjYjhjNGUwIi8+PHJlY3QgeD0iOCIgeT0iMTAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNiOGM0ZTAiLz48cmVjdCB4PSI5IiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2I4YzRlMCIvPjxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2I4YzRlMCIvPjxyZWN0IHg9IjExIiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2I4YzRlMCIvPjxyZWN0IHg9IjEyIiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iI2I4YzRlMCIvPjxyZWN0IHg9IjEzIiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjE0IiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjE1IiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjAiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMSIgeT0iMTEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIyIiB5PSIxMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjMiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iNCIgeT0iMTEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSI1IiB5PSIxMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjYiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iNyIgeT0iMTEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwYjBiMWMiLz48cmVjdCB4PSI4IiB5PSIxMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzBiMGIxYyIvPjxyZWN0IHg9IjkiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMTAiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMTEiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMTIiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMGIwYjFjIi8+PHJlY3QgeD0iMTMiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTQiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTUiIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMCIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIxIiB5PSIxMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjIiIHk9IjEyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMyIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSI0IiB5PSIxMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjUiIHk9IjEyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iNiIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM5ZmUwZmYiLz48cmVjdCB4PSI3IiB5PSIxMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjgiIHk9IjEyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iOSIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMCIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMSIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxMiIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM5ZmUwZmYiLz48cmVjdCB4PSIxMyIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxNCIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIxNSIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIwIiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjEiIHk9IjEzIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMiIgeT0iMTMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIzIiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjQiIHk9IjEzIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iNSIgeT0iMTMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSI2IiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzNhYThmZiIvPjxyZWN0IHg9IjciIHk9IjEzIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iOCIgeT0iMTMiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSI5IiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzlmZTBmZiIvPjxyZWN0IHg9IjEwIiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjExIiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjEyIiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzNhYThmZiIvPjxyZWN0IHg9IjEzIiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjE0IiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjE1IiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjAiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMSIgeT0iMTQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSIyIiB5PSIxNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjMiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iNCIgeT0iMTQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSI1IiB5PSIxNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjYiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iNyIgeT0iMTQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMxZDFkNGEiLz48cmVjdCB4PSI4IiB5PSIxNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzFkMWQ0YSIvPjxyZWN0IHg9IjkiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjM2FhOGZmIi8+PHJlY3QgeD0iMTAiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTEiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTIiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTMiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTQiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjMWQxZDRhIi8+PHJlY3QgeD0iMTUiIHk9IjE0IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMSIgeT0iMTUiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSIyIiB5PSIxNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjMiIHk9IjE1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iNCIgeT0iMTUiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSI1IiB5PSIxNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjYiIHk9IjE1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iNyIgeT0iMTUiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiM0YTRhZDAiLz48cmVjdCB4PSI4IiB5PSIxNSIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0iIzRhNGFkMCIvPjxyZWN0IHg9IjkiIHk9IjE1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMTAiIHk9IjE1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMTEiIHk9IjE1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMTIiIHk9IjE1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMTMiIHk9IjE1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PHJlY3QgeD0iMTQiIHk9IjE1IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjNGE0YWQwIi8+PC9zdmc+" width="24" height="24" alt="" style="image-rendering:pixelated;vertical-align:middle;margin-inline-end:8px">PIXEL WEATHER</div>
+ <input id="q" placeholder="جستجوی شهر… (مثلاً اهواز، Tokyo)" autocomplete="off">
+ <button class="btn" id="gm">🎮 GAME</button><button class="btn" id="gps" title="موقعیت من">GPS</button><button class="btn" id="cp" title="کپی گزارش">📋</button><button class="btn" id="snd" title="افکت‌های صوتی">🔊</button><button class="btn" id="amb" title="صدای محیطی هوا">🎧</button><button class="btn" id="crt" title="افکت CRT">📺</button>
+ <button class="btn" id="fav" title="ذخیره شهر">★</button>
+ <button class="btn" id="lng" title="English">EN</button><button class="btn" id="unit">°C</button>
+ <div id="res"></div>
+</header>
+<div class="chips" id="chips"></div>
+
+<div class="L">
+<section class="hero px up" style="animation-delay:.1s">
+ <div><div class="city" id="city">—</div><div class="date" id="date"></div>
+ <div class="temp pf" id="temp">--°</div>
+ <div class="desc" id="desc"></div><div class="feels" id="feels"></div></div>
+ <div class="big" id="icon">⛅</div>
+</section>
+<div class="tip px up" id="tip" style="animation-delay:.2s"></div>
+<section class="grid up" id="stats" style="animation-delay:.25s"></section>
+<section class="px up" style="animation-delay:.3s"><h2>⏱ ۲۴ ساعت آینده</h2><div class="hours" id="hours"></div></section>
+<section class="px up" style="animation-delay:.45s"><h2>🎮 مینی‌گیم</h2><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px"><div style="font-size:13px">صید آب‌وهوا! هرچی از آسمون می‌ریزه بگیر و از خطرها فرار کن.<b class="pf" id="rec" style="display:block;margin-top:6px;font-size:9px;color:var(--y)"></b></div><button class="btn" id="gplay">PLAY</button></div></section>
+</div>
+<div class="Rr">
+<section class="px up" id="wClock"><h2>🕒 ساعت شهر</h2><div class="clk"><canvas id="clkc" width="128" height="30" title="کلیک: ۱۲/۲۴ ساعته"></canvas><div class="cinfo"><div id="cdate"></div><div id="ctz"></div></div><div class="dbar" id="dbar"></div></div></section>
+<section class="px up" style="animation-delay:.35s"><h2>📅 پیش‌بینی ۷ روزه</h2><div id="days" style="padding-bottom:8px"></div></section>
+<section class="two up" style="animation-delay:.4s">
+ <div class="px"><h2>🌅 خورشید و ماه</h2><div class="sun" id="sun"></div></div>
+ <div class="px"><h2>🍃 کیفیت هوا</h2><div class="sun" id="aq"></div></div>
+</section>
+</div>
+<footer>داده‌ها از <a href="https://open-meteo.com" target="_blank">Open-Meteo.com</a> · هر ۱۰ دقیقه خودکار به‌روز می‌شود</footer>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const ls={g(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},s(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+let unit=ls.g('pw_unit','c'),loc=ls.g('pw_loc',{n:'تهران',a:35.69,o:51.39}),favs=ls.g('pw_favs',[]),D=null,AQ=null;
+const W={0:['آسمان صاف','☀️','🌙'],1:['عمدتاً صاف','🌤️','🌙'],2:['نیمه‌ابری','⛅','☁️'],3:['ابری','☁️','☁️'],45:['مه','🌫️','🌫️'],48:['مه یخ‌زده','🌫️','🌫️'],51:['نم‌نم باران','🌦️','🌧️'],53:['نم‌نم باران','🌦️','🌧️'],55:['نم‌نم شدید','🌧️','🌧️'],56:['باران یخ‌زده','🌧️','🌧️'],57:['باران یخ‌زده','🌧️','🌧️'],61:['باران ضعیف','🌦️','🌧️'],63:['باران','🌧️','🌧️'],65:['باران شدید','🌧️','🌧️'],66:['باران یخ‌زده','🌧️','🌧️'],67:['باران یخ‌زده','🌧️','🌧️'],71:['برف ضعیف','🌨️','🌨️'],73:['برف','❄️','❄️'],75:['برف سنگین','❄️','❄️'],77:['دانه‌برف','❄️','❄️'],80:['رگبار','🌦️','🌧️'],81:['رگبار','🌧️','🌧️'],82:['رگبار شدید','⛈️','⛈️'],85:['بارش برف','🌨️','🌨️'],86:['برف شدید','❄️','❄️'],95:['رعدوبرق','⛈️','⛈️'],96:['تگرگ و رعد','⛈️','⛈️'],99:['تگرگ شدید','⛈️','⛈️']};
+const wi=(c,d=1)=>{const w=W[c]||['نامشخص','❓','❓'];return{t:w[0],i:d?w[1]:w[2]}};
+const skyType=c=>c>=95?'storm':c>=71&&c<=77||c==85||c==86?'snow':c>=51&&c<=67||c>=80&&c<=82?'rain':c==45||c==48?'fog':c>=2?'cloudy':'clear';
+const mins=s=>+s.slice(11,13)*60+ +s.slice(14,16);
+const fmtT=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(Math.round(m%60)).padStart(2,'0');
+const U=()=>unit=='c'?'°C':'°F';
+const toast=(m,ok)=>{const t=$('toast');t.textContent=T(m);t.style.background=ok?'#2e8b57':'#c0392b';t.style.display='block';setTimeout(()=>t.style.display='none',4000)};
+
+async function load(){
+ const tu=unit=='c'?'celsius':'fahrenheit',wu=unit=='c'?'kmh':'mph';
+ const f=`https://api.open-meteo.com/v1/forecast?latitude=${loc.a}&longitude=${loc.o}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,weather_code,uv_index,visibility,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_sum,precipitation_probability_max&timezone=auto&forecast_days=7&temperature_unit=${tu}&wind_speed_unit=${wu}`;
+ const a=`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${loc.a}&longitude=${loc.o}&current=us_aqi,pm10,pm2_5,ozone&timezone=auto`;
+ try{
+  const [r1,r2]=await Promise.allSettled([fetch(f).then(r=>r.json()),fetch(a).then(r=>r.json())]);
+  if(r1.status!='fulfilled'||r1.value.error)throw 0;
+  D=r1.value;AQ=r2.status=='fulfilled'&&r2.value.current?r2.value.current:null;
+  render();
+ }catch{toast('خطا در دریافت اطلاعات از Open-Meteo. اینترنت را بررسی کنید.')}
+ $('load').classList.add('off');
+}
+
+let shownT=0;
+function count(to){const from=shownT,t0=performance.now();shownT=to;(function s(n){const p=Math.min(1,(n-t0)/700),v=Math.round(from+(to-from)*p);$('temp').textContent=v+'°';if(p<1)requestAnimationFrame(s)})(t0)}
+const dirs=['شمال','شمال‌شرق','شرق','جنوب‌شرق','جنوب','جنوب‌غرب','غرب','شمال‌غرب'];
+function render(){
+ const c=D.current,H=D.hourly,d=D.daily,day=c.is_day,w=wi(c.weather_code,day);
+ $('city').textContent=T(loc.n);
+ $('date').textContent=new Date(c.time).toLocaleString(LOC(),{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+ count(Math.round(c.temperature_2m));
+ $('desc').textContent=w.t;$('icon').textContent=w.i;
+ $('feels').textContent=`احساس واقعی: ${Math.round(c.apparent_temperature)}${U()} · امروز ${Math.round(d.temperature_2m_min[0])}° تا ${Math.round(d.temperature_2m_max[0])}°`;
+ document.title=T(`${Math.round(c.temperature_2m)}${U()} ${loc.n} · PixelWeather`);
+ $('unit').textContent=U();
+ $('fav').style.opacity=favs.some(f=>f.n==loc.n)?1:.55;
+ const hi=Math.max(0,H.time.findIndex(t=>t>=c.time.slice(0,13)+':00'));
+ const uv=H.uv_index[hi]??0,vis=(H.visibility[hi]??0)/1000;
+ const fc=unit=='c'?c.apparent_temperature:(c.apparent_temperature-32)*5/9;
+ const rp=Math.max(...H.precipitation_probability.slice(hi,hi+6).filter(x=>x!=null),0);
+ let tip=fc<0?'خیلی سرده! لباس گرم، کلاه و شال 🧣':fc<10?'کاپشن بپوش 🧥':fc<18?'یه ژاکت کافیه 🧶':fc<26?'تی‌شرت و شلوار راحت 👕':fc<33?'لباس سبک و خنک 🩳':'گرمای شدید! آب زیاد بخور و تو سایه باش 🥵';
+ if(rp>=50||c.precipitation>0)tip+=' · چتر یادت نره ☂️';
+ if(uv>=6)tip+=' · کرم ضدآفتاب 🧴';
+ $('tip').innerHTML='💡 '+tip;
+ const ul=uv<3?'کم':uv<6?'متوسط':uv<8?'زیاد':uv<11?'خیلی زیاد':'شدید';
+ const wu=unit=='c'?'km/h':'mph',di=Math.round(c.wind_direction_10m/45)%8;
+ const st=[['💧 رطوبت',c.relative_humidity_2m+'%','',''],
+ ['🌬 باد',`<span class=arrow style="transform:rotate(${c.wind_direction_10m+180}deg)">↑</span> ${Math.round(c.wind_speed_10m)}`,`${wu} · از ${dirs[di]} · وزش ${Math.round(c.wind_gusts_10m)}`],
+ ['⏲ فشار',Math.round(c.pressure_msl),'hPa'],['🔆 UV',uv.toFixed(1),ul],
+ ['👁 دید',vis.toFixed(1),'کیلومتر'],['☁ پوشش ابر',c.cloud_cover+'%',''],
+ ['🌧 بارش',c.precipitation,'mm · احتمال '+rp+'%'],['🌡 حداکثر امروز',Math.round(d.temperature_2m_max[0])+'°','']];
+ $('stats').innerHTML=st.map(s=>`<div class="px st"><small>${s[0]}</small><div class="v">${s[1]}</div><span class="s">${s[2]||''}</span></div>`).join('');
+ const hs=H.temperature_2m.slice(hi,hi+24),mn=Math.min(...hs),mx=Math.max(...hs);
+ $('hours').innerHTML=hs.map((t,k)=>{const j=hi+k,n=k==0;return`<div class="h"><div>${n?'اکنون':H.time[j].slice(11,16)}</div><div class="i">${wi(H.weather_code[j],H.is_day[j]).i}</div><div class="bar"><i style="height:${8+(t-mn)/(mx-mn||1)*34}px"></i></div><div class="t">${Math.round(t)}°</div><div class="rain">💧${H.precipitation_probability[j]??0}%</div></div>`}).join('');
+ const lo=Math.min(...d.temperature_2m_min),hg=Math.max(...d.temperature_2m_max);
+ $('days').innerHTML=d.time.map((t,k)=>{const a=d.temperature_2m_min[k],b=d.temperature_2m_max[k],L=(a-lo)/(hg-lo||1)*100,R=(b-lo)/(hg-lo||1)*100;
+ return`<div class="day"><div>${k?new Date(t+'T12:00').toLocaleDateString(LOC(),{weekday:'long'}):'امروز'}</div><div style="font-size:24px">${wi(d.weather_code[k]).i}</div><div class="t">${Math.round(a)}°</div><div class="rg"><i style="inset-inline-start:${L}%;width:${Math.max(8,R-L)}%"></i></div><div class="t">${Math.round(b)}°</div><div class="rain">💧${d.precipitation_probability_max[k]??0}%</div></div>`}).join('');
+ const sr=mins(d.sunrise[0]),ss=mins(d.sunset[0]);
+ const ph=((Date.now()-Date.UTC(2000,0,6,18,14))/864e5%29.530588+29.530588)%29.530588,pi=Math.round(ph/29.530588*8)%8;
+ $('sun').innerHTML=`<div><span>🌅</span>طلوع<b class=pf>${fmtT(sr)}</b></div><div><span>🌇</span>غروب<b class=pf>${fmtT(ss)}</b></div><div><span>⏳</span>طول روز<b class=pf>${Math.floor((ss-sr)/60)}h ${(ss-sr)%60}m</b></div><div><span>${'🌑🌒🌓🌔🌕🌖🌗🌘'.match(/./gu)[pi]}</span>${['ماه نو','هلال نو','تربیع اول','بدر نو','ماه کامل','بدر پایان','تربیع آخر','هلال پایان'][pi]}<b class=pf>${Math.round(ph)}d</b></div>`;
+ if(AQ&&AQ.us_aqi!=null){const q=AQ.us_aqi,l=q<=50?['خوب','😊']:q<=100?['متوسط','🙂']:q<=150?['ناسالم برای گروه حساس','😷']:q<=200?['ناسالم','🤢']:q<=300?['خیلی ناسالم','☠️']:['خطرناک','💀'];
+  $('aq').innerHTML=`<div><span>${l[1]}</span>AQI<b class=pf>${q}</b>${l[0]}</div><div>PM2.5<b class=pf>${AQ.pm2_5}</b>µg/m³</div><div>PM10<b class=pf>${AQ.pm10}</b>µg/m³</div><div>O₃<b class=pf>${AQ.ozone}</b>µg/m³</div>`}
+ else $('aq').innerHTML='<div>داده‌ای برای این منطقه نیست</div>';
+ // sky
+ const nm=mins(c.time),dl=ss-sr;
+ sky.t=skyType(c.weather_code);sky.day=!!day;
+ sky.p=day?Math.min(1,Math.max(0,(nm-sr)/dl)):((nm-ss+1440)%1440)/(1440-dl);
+ sky.ph=pi;sky.wind=Math.min(3,c.wind_speed_10m/(unit=='c'?20:12));
+ resetSky();updRec();applyAmb();lastK='';drawClock();xl();
+}
+
+function favs_r(){$('chips').innerHTML=favs.map((f,i)=>`<div class=chip data-i=${i}>📍 ${f.n}<b data-x=${i}>✕</b></div>`).join('')}
+$('chips').onclick=e=>{const x=e.target.dataset.x;if(x!=null){favs.splice(+x,1);ls.s('pw_favs',favs);favs_r();render();return}const c=e.target.closest('.chip');if(c){go(favs[+c.dataset.i])}};
+$('fav').onclick=()=>{const i=favs.findIndex(f=>f.n==loc.n);i>=0?favs.splice(i,1):favs.push({...loc});ls.s('pw_favs',favs);favs_r();render()};
+$('unit').onclick=()=>{unit=unit=='c'?'f':'c';ls.s('pw_unit',unit);load()};
+function go(l){loc=l;ls.s('pw_loc',l);$('res').innerHTML='';$('q').value='';load()}
+$('gps').onclick=()=>{if(!navigator.geolocation)return toast('مرورگر شما GPS را پشتیبانی نمی‌کند');navigator.geolocation.getCurrentPosition(p=>go({n:'📍 موقعیت من',a:+p.coords.latitude.toFixed(3),o:+p.coords.longitude.toFixed(3)}),()=>toast('دسترسی به موقعیت داده نشد'))};
+let tm;$('q').oninput=()=>{clearTimeout(tm);const v=$('q').value.trim();if(v.length<2){$('res').innerHTML='';return}
+ tm=setTimeout(async()=>{try{const r=await(await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(v)}&count=6&language=${lang}`)).json();
+ window._r=r.results||[];$('res').innerHTML=window._r.map((p,i)=>`<div class=ri data-i=${i}>${p.name}${p.admin1?'، '+p.admin1:''} <small style="opacity:.6">${p.country||''}</small></div>`).join('')||'<div class=ri>'+T('یافت نشد')+'</div>'}catch{}},350)};
+$('res').onclick=e=>{const t=e.target.closest('[data-i]');if(!t)return;const p=window._r[+t.dataset.i];go({n:p.name+(p.admin1?'، '+p.admin1:''),a:p.latitude,o:p.longitude})};
+document.addEventListener('click',e=>{if(!e.target.closest('header'))$('res').innerHTML=''});
+
+/* ====== Pixel sky ====== */
+const cv=$('sky'),g=cv.getContext('2d'),SW=160,SH=90;
+const sky={t:'clear',day:true,p:.5,ph:4,wind:1};
+const PD={clear:['#1e6fd0','#bfe3fa'],cloudy:['#59687a','#aab8c6'],fog:['#8c969e','#cfd5d9'],rain:['#2f3a4a','#6c7b8c'],snow:['#7d8fa3','#dfe8f0'],storm:['#14141f','#4a4a66']};
+const PN={clear:['#04041a','#2a2a78'],cloudy:['#0b0b1c','#33334d'],fog:['#1a1d24','#454b55'],rain:['#07070f','#2a2f3d'],snow:['#1a2030','#4a5670'],storm:['#05050a','#2a2a3e']};
+const hx=(s,i)=>parseInt(s.substr(i,2),16);
+const pal=(a,b)=>Array.from({length:7},(_,i)=>`rgb(${[1,3,5].map(k=>Math.round(hx(a,k)+(hx(b,k)-hx(a,k))*i/6))})`);
+let stars=[],clouds=[],parts=[],flash=0,bolt=null,fogx=0,t=0;
+const R=(x,y,w,h)=>g.fillRect(Math.round(x),Math.round(y),w,h);
+function resetSky(){
+ stars=Array.from({length:55},()=>({x:Math.random()*SW,y:Math.random()*55,f:Math.random()*6}));
+ const n={clear:2,cloudy:8,fog:4,rain:9,snow:6,storm:10}[sky.t];
+ clouds=Array.from({length:n},()=>({x:Math.random()*SW*1.4-20,y:4+Math.random()*34,s:1+Math.floor(Math.random()*2),v:.05+Math.random()*.12}));
+ const m={rain:90,storm:150,snow:80}[sky.t]||0;
+ parts=Array.from({length:m},()=>({x:Math.random()*SW,y:Math.random()*SH,v:.8+Math.random()*1.2,s:Math.random()*6}));
+}
+function disc(cx,cy,r){for(let y=-r;y<=r;y++)for(let x=-r;x<=r;x++)if(x*x+y*y<=r*r+r/2)R(cx+x,cy+y,1,1)}
+function cloud(x,y,s){R(x+3*s,y,4*s,s);R(x+s,y+s,8*s,s);R(x,y+2*s,10*s,s)}
+function tree(x,y,c){g.fillStyle='#2b1b10';R(x,y-3,1,3);g.fillStyle=c;R(x-2,y-5,5,2);R(x-1,y-7,3,2);R(x,y-9,1,2)}
+function frame(){
+ t++;const night=!sky.day,T=sky.t,C=(night?PN:PD)[T],P=pal(C[0],C[1]);
+ for(let i=0;i<7;i++){g.fillStyle=P[i];R(0,i*13,SW,14)}
+ if(night&&(T=='clear'||T=='cloudy')){stars.forEach(s=>{if((t/12+s.f|0)%6){g.fillStyle=(t/9+s.f|0)%5?'#fff':'#ffd23f';R(s.x,s.y,1,1)}})}
+ if(T=='clear'||T=='cloudy'||T=='fog'){
+  const sx=14+sky.p*132,sy=62-Math.sin(Math.PI*sky.p)*46;
+  if(!night){g.fillStyle='rgba(255,210,63,.25)';disc(sx,sy,11+(t>>4&1));g.fillStyle='#ffd23f';disc(sx,sy,7);g.fillStyle='#fff6a8';disc(sx-1,sy-1,4)}
+  else{g.fillStyle='#e8e8ff';disc(sx,sy,6);if(sky.ph%4){g.fillStyle=P[2];disc(sx+(sky.ph<4?-3:3),sy-1,5)}}
+ }
+ const cc=T=='storm'?'#2a2a3c':T=='rain'?(night?'#2b303c':'#4d5663'):night?'#4a4a6e':T=='snow'?'#e8eef4':'#ffffff';
+ g.fillStyle=cc;
+ clouds.forEach(c=>{c.x+=c.v*(1+sky.wind);if(c.x>SW+5)c.x=-30;cloud(c.x,c.y,c.s)});
+ if(T=='fog'){g.fillStyle='rgba(220,225,230,.22)';fogx=(fogx+.15)%SW;for(let i=0;i<6;i++){R((fogx+i*40)%(SW+40)-40,40+i*8,70,5)}}
+ // hills
+ const snow=T=='snow';
+ const hc=snow?['#cfdbe6','#e8f0f6']:night?['#0c1d17','#10261d']:['#2f6b3f','#3f8a4c'];
+ g.fillStyle=hc[0];for(let x=0;x<SW;x++)R(x,66+Math.sin(x/16+1)*5+Math.sin(x/5)*1.2,1,SH);
+ g.fillStyle=hc[1];for(let x=0;x<SW;x++)R(x,76+Math.sin(x/11)*3,1,SH);
+ [12,38,67,104,131,150].forEach((x,i)=>tree(x,77+Math.sin(x/11)*3+3,snow?'#dfe9f2':night?'#0a3a24':'#1f5a2f'));
+ // precipitation
+ if(parts.length){const wi=sky.wind*.4;
+  parts.forEach(p=>{
+   if(T=='snow'){p.y+=p.v*.35;p.x+=Math.sin((t+p.s*30)/20)*.3+wi*.2;g.fillStyle='#fff';R(p.x,p.y,p.s>3?2:1,p.s>3?2:1)}
+   else{p.y+=p.v*3;p.x-=wi+.4;g.fillStyle=night?'#6fa8ff':'#a8d8ff';R(p.x,p.y,1,3)}
+   if(p.y>SH){p.y=-3;p.x=Math.random()*SW}if(p.x<0)p.x=SW;if(p.x>SW)p.x=0});
+ }
+ if(T=='storm'){if(!flash&&Math.random()<.012){flash=5;thunderSoon();let x=30+Math.random()*100,y=20;bolt=[];while(y<70){bolt.push([x,y]);x+=Math.random()*8-4;y+=5}}
+  if(flash){g.fillStyle=`rgba(255,255,255,${flash*.1})`;R(0,0,SW,SH);g.fillStyle='#fff6a8';bolt.forEach(b=>R(b[0],b[1],2,6));flash--}}
+ setTimeout(()=>requestAnimationFrame(frame),45);
+}
+resetSky();frame();
+
+
+/* ====== Ambient weather sounds ====== */
+let ambOn=ls.g('pw_amb',true),gest=false,AM=null,NB=null,SC=null,AMB={tok:0,k:''};
+function mkCtx(){AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=='suspended')AC.resume();
+ if(!AM){AM=AC.createGain();AM.gain.value=.55;AM.connect(AC.destination);
+  NB=[0,1].map(br=>{const b=AC.createBuffer(1,AC.sampleRate*3,AC.sampleRate),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(br){l=(l+.02*w)/1.02;d[i]=l*3.5}else d[i]=w}return b})}}
+function layer(br,ft,fr,q,gv){const s=AC.createBufferSource();s.buffer=NB[br];s.loop=true;const f=AC.createBiquadFilter();f.type=ft;f.frequency.value=fr;f.Q.value=q;const g=AC.createGain();g.gain.value=gv;s.connect(f);f.connect(g);g.connect(SC);s.start();SC.n.push(s);return{f,g}}
+function osc(f,ty,v){const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;g.gain.value=v;o.connect(g);g.connect(SC);o.start();SC.n.push(o)}
+function blip(f,d,ty,v,sl=0){if(!SC)return;const t0=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.setValueAtTime(f,t0);if(sl)o.frequency.linearRampToValueAtTime(Math.max(50,f+sl),t0+d);g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(v,t0+Math.min(.01,d/3));g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(SC);o.start(t0);o.stop(t0+d+.02)}
+function every(fn,a,b){const k=AMB.tok;(function l(){if(k!=AMB.tok)return;fn();setTimeout(l,a+Math.random()*(b-a))})()}
+function volAmb(){if(AM)AM.gain.setTargetAtTime(gOpen?.15:.55,AC.currentTime,.2)}
+function stopAmb(){AMB.tok++;AMB.k='';if(!SC)return;const g=SC,t=AC.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);SC=null;setTimeout(()=>{g.n.forEach(s=>{try{s.stop()}catch{}});g.disconnect()},700)}
+function applyAmb(){
+ if(!ambOn||!gest||!D){stopAmb();return}
+ const T=sky.t,day=sky.day,w=sky.wind,k=T+day+Math.round(w*2);
+ if(AMB.k==k&&SC)return;
+ mkCtx();stopAmb();AMB.k=k;
+ SC=AC.createGain();SC.n=[];SC.gain.setValueAtTime(0,AC.currentTime);SC.gain.linearRampToValueAtTime(1,AC.currentTime+1.5);SC.connect(AM);
+ const wd=layer(1,'lowpass',240+w*150,.7,.05+w*.07);
+ every(()=>wd.g.gain.linearRampToValueAtTime((.03+w*.07)*(.4+Math.random()*1.2),AC.currentTime+2.2),2200,4500);
+ const R=T=='storm'?1:.55;
+ if(T=='rain'||T=='storm'){
+  layer(0,'highpass',1800,.7,.04+.06*R);layer(0,'bandpass',750,.6,.03+.05*R);
+  every(()=>blip(900+Math.random()*1800,.04,'sine',.03+Math.random()*.03,-250),T=='storm'?50:130,T=='storm'?170:360);
+  if(T=='storm')layer(1,'lowpass',130,.5,.18)}
+ else if(T=='snow'){layer(0,'highpass',3800,.5,.01);
+  every(()=>{const f=1400+Math.random()*1000;blip(f,.7,'triangle',.018);setTimeout(()=>blip(f*1.5,.6,'sine',.01),120)},2500,6000)}
+ else if(T=='fog'){osc(55,'triangle',.05);osc(82.6,'sine',.035);layer(1,'lowpass',180,.5,.08);
+  every(()=>{blip(110,2.2,'triangle',.05);blip(165,2.2,'sine',.03)},16000,32000)}
+ else if(day){
+  every(()=>{const n=2+(Math.random()*4|0),f=2600+Math.random()*1600;for(let i=0;i<n;i++)setTimeout(()=>blip(f+i*120,.07,'sine',.025,500),i*85)},T=='clear'?1300:4000,T=='clear'?4200:9000)}
+ else if(T=='clear'){
+  every(()=>{for(let i=0;i<3;i++)setTimeout(()=>blip(4400,.03,'sine',.012),i*55)},850,1250)}
+ volAmb();
+}
+function thunderSoon(){if(!SC||sky.t!='storm')return;const sc=SC;
+ setTimeout(()=>{if(SC!==sc)return;const t0=AC.currentTime;
+  const mk=(b,ft,f1,f2,dur,pk)=>{const s=AC.createBufferSource();s.buffer=NB[b];s.loop=true;const f=AC.createBiquadFilter();f.type=ft;f.frequency.setValueAtTime(f1,t0);f.frequency.exponentialRampToValueAtTime(f2,t0+dur);const g=AC.createGain();g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(pk,t0+.05);g.gain.exponentialRampToValueAtTime(.001,t0+dur);s.connect(f);f.connect(g);g.connect(sc);s.start(t0,Math.random()*1.5);s.stop(t0+dur+.1)};
+  mk(0,'highpass',3000,800,.25,.5);mk(1,'lowpass',900,70,3.6,1.6)},250+Math.random()*900)}
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{if(!gest){gest=true;applyAmb()}}));
+$('amb').onclick=()=>{ambOn=!ambOn;ls.s('pw_amb',ambOn);tg();gest=true;applyAmb();toast(ambOn?'🎧 صدای محیط روشن شد':'🎧 صدای محیط خاموش شد',1)};
+
+/* ====== Sound / toggles / extras ====== */
+let sndOn=ls.g('pw_snd',true),crtOn=ls.g('pw_crt',false),AC=null;
+function beep(f,d=.08,ty='square',v=.04,sl=0){if(!sndOn)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),n=AC.createGain(),t0=AC.currentTime;o.type=ty;o.frequency.setValueAtTime(f,t0);if(sl)o.frequency.linearRampToValueAtTime(f+sl,t0+d);n.gain.setValueAtTime(v,t0);n.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(n);n.connect(AC.destination);o.start(t0);o.stop(t0+d)}catch{}}
+function tg(){$('snd').textContent=sndOn?'🔊':'🔇';$('snd').classList.toggle('off',!sndOn);$('crt').classList.toggle('off',!crtOn);$('amb').classList.toggle('off',!ambOn);document.body.classList.toggle('crt',crtOn)}
+$('snd').onclick=()=>{sndOn=!sndOn;ls.s('pw_snd',sndOn);tg();beep(660)};
+$('crt').onclick=()=>{crtOn=!crtOn;ls.s('pw_crt',crtOn);tg()};
+document.addEventListener('click',e=>{if(e.target.closest('.btn,.chip,.ri'))beep(520,.05)});
+$('cp').onclick=async()=>{if(!D)return;const c=D.current;try{await navigator.clipboard.writeText(T(`${loc.n}: ${Math.round(c.temperature_2m)}${U()} · ${wi(c.weather_code,c.is_day).t} · احساس ${Math.round(c.apparent_temperature)}${U()} · رطوبت ${c.relative_humidity_2m}% · باد ${Math.round(c.wind_speed_10m)}`));toast('گزارش کپی شد ✔',1)}catch{toast('کپی نشد')}};
+tg();
+
+/* ====== Mini game: WEATHER CATCH ====== */
+const gc=$('gc'),gt=gc.getContext('2d'),GW=192,GH=108,K={},HS=ls.g('pw_hs',{});
+const FA={clear:'صاف',cloudy:'ابری',fog:'مه',rain:'باران',snow:'برف',storm:'طوفان'};
+const TH={clear:['coin','bomb'],cloudy:['drop','bolt'],fog:['coin','bomb'],rain:['drop','bolt'],snow:['flake','bomb'],storm:['drop','bolt']};
+const SP={
+ drop:{c:{b:'#3aa8ff',w:'#fff'},m:['...b...','..bbb..','.bbbbb.','bbwbbbb','bbwbbbb','.bbbbb.','..bbb..']},
+ flake:{c:{w:'#fff',b:'#9fdcff'},m:['...w...','w..b..w','.w.w.w.','wwwwwww','.w.w.w.','w..b..w','...w...']},
+ coin:{c:{o:'#b8860b',y:'#ffd23f'},m:['..ooo..','.oyyyo.','oyyoyyo','oyyoyyo','oyyoyyo','.oyyyo.','..ooo..']},
+ star:{c:{y:'#fff06b'},m:['...y...','...y...','yyyyyyy','.yyyyy.','..yyy..','.yy.yy.','yy...yy']},
+ bolt:{c:{p:'#c04bff'},m:['...pp..','..pp...','.pp....','pppppp.','...pp..','..pp...','.p.....']},
+ bomb:{c:{k:'#1a1a1a',w:'#777',o:'#ff5533'},m:['....o.o','...ow..','.kkkk..','kkkkkk.','kkwkkk.','kkkkkk.','.kkkk..']},
+ heart:{c:{r:'#ff4d6d'},m:['.r.r.','rrrrr','rrrrr','.rrr.','..r..']}
+};
+let G,gOpen=false,gl=0;
+function spr(n,px,py){const S=SP[n];S.m.forEach((r,j)=>{for(let i=0;i<r.length;i++){const ch=r[i];if(ch!='.'){gt.fillStyle=S.c[ch];gt.fillRect(Math.round(px)+i,Math.round(py)+j,1,1)}}})}
+function updRec(){$('rec').textContent=T('🏆 رکورد '+FA[sky.t]+': '+(HS[sky.t]||0))}
+function newGame(s='ready'){G={s,px:GW/2,it:[],pop:[],sc:0,lv:1,li:3,cb:0,slow:0,sp:30,shake:0,t:0,best:HS[sky.t]||0,nb:false}}
+const pop=(x,y,txt,c)=>G.pop.push({x,y,txt,c,t:40});
+function over(){G.s='over';if(G.sc>(HS[sky.t]||0)){HS[sky.t]=G.sc;ls.s('pw_hs',HS);G.nb=true;updRec()}beep(220,.5,'sawtooth',.06,-160)}
+function hit(i){const cx=i.x+3.5;
+ if(i.k=='good'){G.cb++;const m=1+Math.min(4,G.cb/5|0);G.sc+=m;pop(cx,GH-40,'+'+m,'#fff');beep(520+Math.min(G.cb,24)*22,.07,'square',.04)}
+ else if(i.k=='star'){G.sc+=10;G.slow=300;if(G.li<5)G.li++;pop(cx,GH-40,'+10 SLOW','#fff06b');beep(700,.25,'triangle',.06,500)}
+ else{G.li--;G.cb=0;G.shake=12;pop(cx,GH-40,'OUCH','#ff4d4d');beep(150,.3,'sawtooth',.06,-90);if(G.li<=0)over()}
+ G.lv=1+(G.sc/20|0)}
+function upd(dt){
+ G.t+=dt;const sl=G.slow>0?.45:1;G.slow=Math.max(0,G.slow-dt);
+ G.px=Math.max(11,Math.min(GW-11,G.px+((K.r?1:0)-(K.l?1:0))*2.8*dt));
+ G.sp-=dt*(G.slow>0?.5:1);
+ if(G.sp<=0){G.sp=Math.max(13,42-G.lv*3)+Math.random()*10;const r=Math.random(),bp=sky.t=='storm'?.36:.25;
+  G.it.push({k:r<.09?'star':r<.09+bp?'bad':'good',x:6+Math.random()*(GW-18),y:-8,v:.6+G.lv*.07+Math.random()*.3})}
+ for(const i of G.it){i.y+=i.v*dt*sl;
+  if(!i.d&&i.y+7>GH-36&&i.y<GH-30&&Math.abs(i.x+3.5-G.px)<12){i.d=1;hit(i)}
+  else if(i.y>GH-10){i.d=1;if(i.k=='good'){if(G.cb>2)pop(i.x,GH-20,'MISS','#ff8a8a');G.cb=0}}}
+ G.it=G.it.filter(i=>!i.d);
+ G.pop.forEach(p=>{p.y-=.4*dt;p.t-=dt});G.pop=G.pop.filter(p=>p.t>0);G.shake=Math.max(0,G.shake-dt);
+}
+function tx(t,x,y,c,al='left',sz=7){gt.font=sz+"px 'Press Start 2P',monospace";gt.textAlign=al;gt.fillStyle='#000';gt.fillText(t,x+1,y+1);gt.fillStyle=c;gt.fillText(t,x,y)}
+function gdraw(){
+ const night=!sky.day,C=(night?PN:PD)[sky.t],P=pal(C[0],C[1]);
+ gt.save();if(G.shake)gt.translate((Math.random()-.5)*3,0);
+ for(let i=0;i<7;i++){gt.fillStyle=P[i];gt.fillRect(0,i*16,GW,17)}
+ if(night){gt.fillStyle='#fff';stars.forEach(s=>{if((G.t/14+s.f|0)%5)gt.fillRect(s.x*1.2|0,s.y*1.2|0,1,1)})}
+ gt.fillStyle=sky.t=='snow'?'#e8f0f6':night?'#10261d':'#3f8a4c';gt.fillRect(0,GH-10,GW,10);
+ gt.fillStyle=sky.t=='snow'?'#cfdbe6':night?'#0c1d17':'#2f6b3f';for(let i=0;i<GW;i+=6)gt.fillRect(i,GH-10,3,2);
+ G.it.forEach(i=>spr(i.k=='good'?TH[sky.t][0]:i.k=='star'?'star':TH[sky.t][1],i.x,i.y));
+ const px=Math.round(G.px),uy=GH-36,cols=['#ff4d6d','#fff'],walk=((G.t/6|0)%2)&&(K.l||K.r);
+ [[5,0],[8,1],[10,2]].forEach(([hw,r])=>{for(let k=-hw;k<=hw;k++){gt.fillStyle=cols[((k+hw)/4|0)%2];gt.fillRect(px+k,uy+r,1,1)}});
+ for(let k=-10;k<=10;k++)if((k+10)%4<3){gt.fillStyle=cols[((k+10)/4|0)%2];gt.fillRect(px+k,uy+3,1,1)}
+ gt.fillStyle='#6b4a2b';gt.fillRect(px,uy+4,1,9);
+ gt.fillStyle='#ffd7b0';gt.fillRect(px-1,GH-22,3,3);gt.fillStyle='#3a7bd5';gt.fillRect(px-2,GH-19,5,5);
+ gt.fillStyle='#222';gt.fillRect(px-2,GH-14,2,4);gt.fillRect(px+1,GH-14,2,walk?3:4);
+ G.pop.forEach(p=>tx(p.txt,p.x,p.y,p.c,'center',6));
+ if(G.s!='ready'){tx('SCORE '+G.sc,4,10,'#fff');tx('LV'+G.lv,GW/2,10,'#ffd23f','center');
+  if(G.cb>=5)tx('COMBO x'+(1+Math.min(4,G.cb/5|0)),4,20,'#7fd4ff',undefined,6);
+  for(let i=0;i<G.li;i++)spr('heart',GW-8-i*7,4);
+  if(G.slow>0){gt.fillStyle='#fff06b';gt.fillRect(0,0,GW*G.slow/300,2)}}
+ if(G.s!='play'){gt.fillStyle='rgba(0,0,0,.6)';gt.fillRect(0,0,GW,GH);
+  const bl=(G.t+performance.now()/400|0)%2||1;
+  if(G.s=='ready'){tx('WEATHER CATCH',GW/2,28,'#ffd23f','center',10);tx(FA[sky.t].length?'':'',0,0,'#000');
+   spr(TH[sky.t][0],40,42);tx('+1',52,49,'#fff');spr('star',84,42);tx('+10',96,49,'#fff');spr(TH[sky.t][1],128,42);tx('-1',140,49,'#ff6b6b');
+   if(bl)tx('PRESS SPACE / TAP',GW/2,84,'#fff','center')}
+  else if(G.s=='pause'){tx('PAUSED',GW/2,56,'#ffd23f','center',10)}
+  else{tx('GAME OVER',GW/2,34,'#ff4d4d','center',10);tx('SCORE '+G.sc,GW/2,54,'#fff','center');tx(G.nb?'NEW RECORD!':'BEST '+G.best,GW/2,68,'#ffd23f','center');if(bl)tx('SPACE = RETRY',GW/2,88,'#fff','center',6)}}
+ gt.restore();
+}
+function act(){if(G.s=='ready'||G.s=='over'){newGame('play');beep(440,.1,'square',.05,300)}else G.s=G.s=='play'?'pause':'play'}
+function openG(){gOpen=true;volAmb();$('gw').classList.add('on');$('gt').textContent=T('🎮 WEATHER CATCH · '+FA[sky.t]);newGame();gl=performance.now();requestAnimationFrame(gloop)}
+function closeG(){gOpen=false;volAmb();$('gw').classList.remove('on')}
+function gloop(n){if(!gOpen)return;const dt=Math.min(3,(n-gl)/16.67);gl=n;if(G.s=='play')upd(dt);gdraw();requestAnimationFrame(gloop)}
+$('gm').onclick=$('gplay').onclick=openG;$('gxb').onclick=closeG;
+$('gw').addEventListener('pointerdown',e=>{if(e.target.id=='gw')closeG()});
+const mv=e=>{const r=gc.getBoundingClientRect();G.px=Math.max(11,Math.min(GW-11,(e.clientX-r.left)/r.width*GW))};
+gc.addEventListener('pointermove',mv);gc.addEventListener('pointerdown',e=>{mv(e);if(G.s!='play')act()});
+window.addEventListener('blur',()=>{if(gOpen&&G&&G.s=='play')G.s='pause'});
+document.addEventListener('keydown',e=>{
+ if(e.target.tagName=='INPUT')return;const k=e.key;
+ if(!gOpen){if(k=='g'||k=='G')openG();else if(k=='/'){e.preventDefault();$('q').focus()}else if(k=='u'||k=='U')$('unit').click();return}
+ if(k=='ArrowLeft'||k=='a'||k=='A')K.l=1;else if(k=='ArrowRight'||k=='d'||k=='D')K.r=1;
+ else if(k==' '||k=='Enter'){e.preventDefault();act()}else if(k=='Escape')closeG();
+ if(k.startsWith('Arrow'))e.preventDefault()});
+document.addEventListener('keyup',e=>{const k=e.key;if(k=='ArrowLeft'||k=='a'||k=='A')K.l=0;if(k=='ArrowRight'||k=='d'||k=='D')K.r=0});
+
+
+
+/* ====== Language: Persian / English ====== */
+let lang=ls.g('pw_lang','fa');
+const LOC=()=>lang=='en'?'en-US':'fa-IR';
+const EN={
+'یا موس و لمس':'or mouse / touch','حرکت':'move','شروع و مکث':'start / pause','خروج':'exit','ستاره':'Star','کندی زمان':'slow-mo','جان':'life','خطر':'danger','و':'and',
+'کمبو بگیر تا ضریب امتیاز بالا بره':'chain catches (combo) to raise your score multiplier',
+'جستجوی شهر':'Search city','مثلاً':'e.g.','اهواز':'Ahvaz','مشهد':'Mashhad','اصفهان':'Isfahan','شیراز':'Shiraz','تبریز':'Tabriz','کرج':'Karaj','قم':'Qom','رشت':'Rasht','کرمان':'Kerman','ارومیه':'Urmia','یزد':'Yazd','همدان':'Hamedan','کرمانشاه':'Kermanshah','بندرعباس':'Bandar Abbas','ساری':'Sari','زاهدان':'Zahedan','اراک':'Arak','قزوین':'Qazvin','زنجان':'Zanjan','گرگان':'Gorgan','سنندج':'Sanandaj','بوشهر':'Bushehr','اردبیل':'Ardabil','موقعیت من':'My location','کپی گزارش':'Copy report','افکت‌های صوتی':'Sound effects','صدای محیطی هوا':'Ambient weather sound','افکت CRT':'CRT effect','ذخیره شهر':'Save city',
+'۲۴ ساعت آینده':'Next 24 hours','مینی‌گیم':'Mini-game','صید آب‌وهوا! هرچی از آسمون می‌ریزه بگیر و از خطرها فرار کن':'Weather Catch! Grab whatever falls from the sky and dodge the dangers.',
+'ساعت شهر':'City clock','کلیک':'Click','۲۴ ساعته':'24-hour','پیش‌بینی ۷ روزه':'7-day forecast','خورشید و ماه':'Sun & Moon','کیفیت هوا':'Air quality','داده‌ها از':'Data from','هر ۱۰ دقیقه خودکار به‌روز می‌شود':'auto-updates every 10 min','تهران':'Tehran',
+'آسمان صاف':'Clear sky','عمدتاً صاف':'Mostly clear','نیمه‌ابری':'Partly cloudy','ابری':'Cloudy','مه':'Fog','مه یخ‌زده':'Freezing fog','نم‌نم باران':'Drizzle','نم‌نم شدید':'Heavy drizzle','باران یخ‌زده':'Freezing rain','باران ضعیف':'Light rain','باران':'Rain','باران شدید':'Heavy rain','برف ضعیف':'Light snow','برف':'Snow','برف سنگین':'Heavy snow','دانه‌برف':'Snow grains','رگبار':'Showers','رگبار شدید':'Heavy showers','بارش برف':'Snow showers','برف شدید':'Heavy snow showers','رعدوبرق':'Thunderstorm','تگرگ و رعد':'Thunderstorm with hail','تگرگ شدید':'Severe hail','نامشخص':'Unknown',
+'خطا در دریافت اطلاعات از':'Failed to load data from','اینترنت را بررسی کنید':'check your internet connection',
+'شمال':'north','شمال‌شرق':'northeast','شرق':'east','جنوب‌شرق':'southeast','جنوب':'south','جنوب‌غرب':'southwest','غرب':'west','شمال‌غرب':'northwest',
+'احساس واقعی':'Feels like','امروز':'Today','تا':'to','احساس':'feels',
+'خیلی سرده! لباس گرم، کلاه و شال':'Freezing! Dress warm: hat and scarf','کاپشن بپوش':'Wear a jacket','یه ژاکت کافیه':'A light sweater is enough','تی‌شرت و شلوار راحت':'T-shirt and comfy pants','لباس سبک و خنک':'Light, cool clothes','گرمای شدید! آب زیاد بخور و تو سایه باش':'Extreme heat! Drink lots of water and stay in the shade','چتر یادت نره':"Don't forget an umbrella",'کرم ضدآفتاب':'Wear sunscreen',
+'کم':'Low','متوسط':'Moderate','زیاد':'High','خیلی زیاد':'Very high','شدید':'Extreme',
+'رطوبت':'Humidity','باد':'Wind','از':'from','وزش':'gust','فشار':'Pressure','دید':'Visibility','کیلومتر':'km','پوشش ابر':'Cloud cover','بارش':'Precip.','احتمال':'chance','حداکثر امروز':"Today's high",'اکنون':'Now',
+'طلوع':'Sunrise','غروب':'Sunset','طول روز':'Day length','ماه نو':'New moon','هلال نو':'Waxing crescent','تربیع اول':'First quarter','بدر نو':'Waxing gibbous','ماه کامل':'Full moon','بدر پایان':'Waning gibbous','تربیع آخر':'Last quarter','هلال پایان':'Waning crescent',
+'خوب':'Good','ناسالم برای گروه حساس':'Unhealthy for sensitive groups','ناسالم':'Unhealthy','خیلی ناسالم':'Very unhealthy','خطرناک':'Hazardous','داده‌ای برای این منطقه نیست':'No data for this area',
+'مرورگر شما GPS را پشتیبانی نمی‌کند':'Your browser does not support GPS','دسترسی به موقعیت داده نشد':'Location access denied','یافت نشد':'Not found','صدای محیط روشن شد':'Ambient sound on','صدای محیط خاموش شد':'Ambient sound off','گزارش کپی شد':'Report copied','کپی نشد':'Copy failed',
+'صاف':'Clear','طوفان':'Storm','رکورد':'Record','الان':'Now','توصیه':'Tip','آمار':'Stats','ساعتی':'Hourly','هفته':'Week','خورشید':'Sun','هوا':'Air','بازی':'Game','ساعت':'Clock','کوچک‌کردن':'Minimize','بستن':'Close','کلید':'Key','نمایش همه':'Show all','همه':'All','،':','
+};
+const nz=s=>s.replace(/[\u200c\u064b-\u0652]/g,'');
+const EN2={};Object.keys(EN).forEach(k=>EN2[nz(k)]=EN[k]);
+const esc=k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const RX=new RegExp('(?<![\\u0620-\\u064A\\u0671-\\u06D3])(?:'+Object.keys(EN2).sort((a,b)=>b.length-a.length).map(esc).join('|')+')(?![\\u0620-\\u064A\\u0671-\\u06D3])','g');
+const xlate=s=>nz(s).replace(RX,m=>EN2[m]).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/،/g,',');
+const T=s=>lang=='en'?xlate(s):s;
+function xl(root=document.body){
+ const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentNode.closest('script,style')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT}),ns=[];
+ while(w.nextNode())ns.push(w.currentNode);
+ ns.forEach(n=>{if(n.__x===undefined||n.data!==n.__x)n.__o=n.data;const v=lang=='en'?xlate(n.__o):n.__o;if(n.data!==v)n.data=v;n.__x=n.data});
+ root.querySelectorAll('[placeholder],[title]').forEach(el=>['placeholder','title'].forEach(a=>{if(!el.hasAttribute(a))return;const k='__x'+a,o='__o'+a;if(el[k]===undefined||el.getAttribute(a)!==el[k])el[o]=el.getAttribute(a);const v=lang=='en'?xlate(el[o]):el[o];if(el.getAttribute(a)!==v)el.setAttribute(a,v);el[k]=v}))}
+function applyLang(){
+ const E=lang=='en';document.documentElement.lang=lang;document.documentElement.dir=E?'ltr':'rtl';
+ $('lng').textContent=E?'FA':'EN';$('lng').title=E?'فارسی':'English';
+ lastK='';favs_r();if(D)render();drawClock();xl()}
+$('lng').onclick=()=>{lang=lang=='en'?'fa':'en';ls.s('pw_lang',lang);applyLang();beep(600,.06)};
+document.addEventListener('keydown',e=>{if(!gOpen&&e.target.tagName!='INPUT'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&(e.key=='l'||e.key=='L'))$('lng').click()});
+
+/* ====== Pixel clock ====== */
+const DG={'0':["01110","10001","10011","10101","11001","10001","01110"],'1':["00100","01100","00100","00100","00100","00100","01110"],'2':["01110","10001","00001","00010","00100","01000","11111"],'3':["11110","00001","00001","01110","00001","00001","11110"],'4':["00010","00110","01010","10010","11111","00010","00010"],'5':["11111","10000","11110","00001","00001","10001","01110"],'6':["00110","01000","10000","11110","10001","10001","01110"],'7':["11111","00001","00010","00100","01000","01000","01000"],'8':["01110","10001","10001","01110","10001","10001","01110"],'9':["01110","10001","10001","01111","00001","00010","01100"]};
+const CD=['#fff6a8','#ffe66b','#ffd23f','#ffc21f','#ffb000','#ff9f1c','#ff8a1c'],CN=['#e8ffff','#c8f6ff','#9fe0ff','#7fd4ff','#5fbaff','#4aa0f0','#3a86e0'];
+let h24=ls.g('pw_h24',true),lastK='',lastS=-1;
+function glyph(x,ch,ox,oy,s,cols,sh){const g=DG[ch];for(let r=0;r<7;r++)for(let q=0;q<5;q++)if(g[r][q]=='1'){if(sh){x.fillStyle=sh;x.fillRect(ox+q*s+1,oy+r*s+1,s,s)}else{x.fillStyle=cols[r];x.fillRect(ox+q*s,oy+r*s,s,s)}}}
+const utcs=o=>{const a=Math.abs(o)/3600,h=Math.floor(a),m=Math.round((a-h)*60);return 'UTC'+(o<0?'-':'+')+h+(m?':'+String(m).padStart(2,'0'):'')};
+function drawClock(){
+ const c=$('clkc');if(!c)return;
+ const off=D?D.utc_offset_seconds:-new Date().getTimezoneOffset()*60,d=new Date(Date.now()+off*1000);
+ const H24=d.getUTCHours(),M=d.getUTCMinutes(),S=d.getUTCSeconds(),x=c.getContext('2d'),cols=sky.day?CD:CN,gh=Array(7).fill('#16163a');
+ const hh=String(h24?H24:(H24%12||12)).padStart(2,'0'),mm=String(M).padStart(2,'0'),ss=String(S).padStart(2,'0');
+ x.fillStyle='#0b0b1c';x.fillRect(0,0,128,30);
+ for(let y=0;y<30;y+=2){x.fillStyle='rgba(255,255,255,.035)';x.fillRect(0,y,128,1)}
+ const X0=6,Y0=4,pos=[X0,X0+18,X0+42,X0+60],sp=[X0+82,X0+94],t=hh+mm;
+ for(let i=0;i<4;i++)glyph(x,'8',pos[i],Y0,3,gh);
+ for(let i=0;i<2;i++)glyph(x,'8',sp[i],11,2,gh);
+ for(let i=0;i<4;i++){glyph(x,t[i],pos[i],Y0,3,null,'#000');glyph(x,t[i],pos[i],Y0,3,cols)}
+ for(let i=0;i<2;i++){glyph(x,ss[i],sp[i],11,2,null,'#000');glyph(x,ss[i],sp[i],11,2,cols)}
+ x.fillStyle=S%2==0?cols[2]:'#16163a';x.fillRect(X0+36,Y0+6,3,3);x.fillRect(X0+36,Y0+12,3,3);
+ x.font="5px 'Press Start 2P',monospace";x.textAlign='left';x.fillStyle=cols[4];x.fillText(h24?'24H':(H24>=12?'PM':'AM'),X0+82,9);
+ if(S!=lastS){lastS=S;if(M==0&&S==0)beep(880,.18,'square',.05)}
+ const k=(H24*60+M)+'|'+(D?D.timezone:'')+lang;
+ if(k!=lastK){lastK=k;
+  const E=lang=='en',mainD=d.toLocaleDateString(E?'en-US':'fa-IR-u-ca-persian',{timeZone:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'}),secD=d.toLocaleDateString(E?'en-US-u-ca-persian':'en-GB',{timeZone:'UTC',weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  const df=(off+new Date().getTimezoneOffset()*60)/60,a=Math.abs(df),hq=a/60|0,mq=a%60;
+  const dt=E?(df==0?'same time as you':[hq?hq+' h':'',mq?mq+' min':''].filter(Boolean).join(' ')+(df>0?' ahead of you':' behind you')):(df==0?'هم‌ساعت با شما':[hq?hq.toLocaleString('fa-IR')+' ساعت':'',mq?mq.toLocaleString('fa-IR')+' دقیقه':''].filter(Boolean).join(' و ')+(df>0?' جلوتر':' عقب‌تر')+' از شما');
+  $('cdate').innerHTML=`<b>${mainD}</b><br><span style="opacity:.7;font-family:'Press Start 2P',monospace;font-size:9px">${secD}</span>`;
+  $('ctz').textContent=`📍 ${T(loc.n)} · ${utcs(off)} · ${dt}`;
+  const pr=(H24*3600+M*60+S)/864,sr=D?mins(D.daily.sunrise[0])/14.4:0,ssn=D?mins(D.daily.sunset[0])/14.4:0;
+  $('dbar').innerHTML=`<i style="width:${pr}%"></i>${D?`<u style="left:${sr}%"></u><u style="left:${ssn}%"></u>`:''}<span style="left:${pr}%">${sky.day?'☀️':'🌙'}</span>`}
+}
+$('clkc').onclick=()=>{h24=!h24;ls.s('pw_h24',h24);beep(660,.06);drawClock()};
+setInterval(drawClock,250);
+
+/* ====== Window manager ====== */
+const WD=[['clock','🕒','ساعت','#wClock'],['hero','🌡','الان','.hero'],['tip','💡','توصیه','#tip'],['stats','📊','آمار','#stats'],['hours','⏱','ساعتی',()=>$('hours').closest('section')],['days','📅','هفته',()=>$('days').closest('section')],['sun','🌅','خورشید',()=>$('sun').closest('.px')],['aq','🍃','هوا',()=>$('aq').closest('.px')],['game','🎮','بازی',()=>$('gplay').closest('section')]];
+const WIN=WD.map(([id,ic,nm,q])=>({id,ic,nm,el:typeof q=='string'?document.querySelector(q):q()}));
+let WS=ls.g('pw_win',{});
+WIN.forEach(w=>{const h=w.el.querySelector(':scope>h2');if(h){const sp=document.createElement('span');sp.className='wc';sp.innerHTML='<b data-a="min" title="کوچک‌کردن">▪</b><b data-a="off" title="بستن">✕</b>';h.appendChild(sp)}});
+const dock=document.createElement('div');dock.id='dock';
+dock.innerHTML=WIN.map((w,i)=>`<button class="dk on" data-w="${w.id}" title="کلید ${i+1}">${w.ic}<small>${i+1}·${w.nm}</small></button>`).join('')+'<button class="dk rs" data-w="reset" title="نمایش همه">⟲<small>همه</small></button>';
+document.body.appendChild(dock);
+function winApply(){
+ WIN.forEach(w=>{const st=WS[w.id]||'';w.el.classList.toggle('woff',st=='off');w.el.classList.toggle('wmin',st=='min')});
+ const two=document.querySelector('.two');two.classList.toggle('woff',[...two.children].every(e=>e.classList.contains('woff')));
+ const L=document.querySelector('.L'),Rr=document.querySelector('.Rr');
+ [L,Rr].forEach(c=>c.classList.toggle('wempty',![...c.children].some(e=>!e.classList.contains('woff'))));
+ document.querySelector('main').classList.toggle('one',L.classList.contains('wempty')||Rr.classList.contains('wempty'));
+ dock.querySelectorAll('.dk[data-w]').forEach(b=>{const w=WIN.find(w=>w.id==b.dataset.w);if(w)b.classList.toggle('on',WS[w.id]!='off')});
+ ls.s('pw_win',WS)}
+function toggleWin(w){const st=WS[w.id]||'';WS[w.id]=st?'':'off';winApply();beep(st?700:380,.06);
+ if(st){w.el.classList.remove('pop');void w.el.offsetWidth;w.el.classList.add('pop');w.el.scrollIntoView({behavior:'smooth',block:'nearest'})}}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('.wc b');
+ if(b){const w=WIN.find(w=>w.el.contains(b));if(!w)return;WS[w.id]=b.dataset.a=='min'?((WS[w.id]=='min')?'':'min'):'off';winApply();return}
+ const k=e.target.closest('.dk');if(!k)return;
+ if(k.dataset.w=='reset'){WS={};winApply();return}
+ toggleWin(WIN.find(w=>w.id==k.dataset.w))});
+document.addEventListener('keydown',e=>{
+ if(gOpen||e.target.tagName=='INPUT'||e.ctrlKey||e.metaKey||e.altKey)return;
+ const i='123456789'.indexOf(e.key);if(i>=0)toggleWin(WIN[i])});
+winApply();drawClock();
+
+if(lang=='en')applyLang();
+favs_r();load();
+setInterval(load,600000);
+</script>
+</body>
+</html>
